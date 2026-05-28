@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ROBOLAB — Panel de Equipo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cyan: #00f5ff;
+      --green: #00ff88;
+      --orange: #ff6b2b;
+      --red: #ff2d55;
+      --yellow: #ffd60a;
+      --bg-deep: #050a0f;
+      --bg-card: #0a1628;
+      --bg-panel: #0d1f35;
+      --border: #1a3a5c;
+      --text-muted: #4a7fa5;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Exo 2', sans-serif;
+      background: var(--bg-deep);
+      color: #e0f0ff;
+      min-height: 100vh;
+    }
+
+    /* ── Fondo ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,245,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,245,255,0.025) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Header ── */
+    .top-header {
+      background: linear-gradient(180deg, rgba(10,22,40,0.98) 0%, rgba(10,22,40,0.9) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .team-name {
+      font-family: 'Orbitron', monospace;
+      font-weight: 900;
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      color: var(--cyan);
+      text-shadow: 0 0 30px rgba(0,245,255,0.5);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Contador de monedas animado ── */
+    .coin-counter {
+      background: linear-gradient(135deg, rgba(255,214,10,0.1), rgba(255,107,43,0.1));
+      border: 1px solid rgba(255,214,10,0.4);
+      border-radius: 4px;
+      padding: 0.5rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .coin-counter::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,214,10,0.05), transparent);
+      animation: shimmer 3s linear infinite;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .coin-amount {
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--yellow);
+      text-shadow: 0 0 20px rgba(255,214,10,0.6);
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .coin-amount.bump {
+      transform: scale(1.3);
+      color: #fff;
+    }
+    .coin-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: rgba(255,214,10,0.6);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+
+    /* ── Tabs ── */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+      padding: 0 1.5rem;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.9rem 1.2rem;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .tab-btn:hover { color: #e0f0ff; }
+    .tab-btn.active {
+      color: var(--cyan);
+      border-bottom-color: var(--cyan);
+    }
+    .tab-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--orange);
+      color: white;
+      font-size: 0.6rem;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      margin-left: 6px;
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 700;
+    }
+
+    /* ── Panel container ── */
+    .panel { display: none; padding: 1.5rem; max-width: 900px; margin: 0 auto; }
+    .panel.active { display: block; }
+
+    /* ── Cards ── */
+    .cyber-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.25rem;
+      position: relative;
+    }
+    .cyber-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--cyan);
+      border-radius: 4px 0 0 4px;
+    }
+    .card-title {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Desafío item ── */
+    .challenge-item {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      transition: all 0.3s;
+      position: relative;
+    }
+    .challenge-item:last-child { margin-bottom: 0; }
+    .challenge-item.completado {
+      opacity: 0.45;
+      border-color: rgba(0,255,136,0.2);
+    }
+    .challenge-item.completado .challenge-title {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+    .challenge-item.revision {
+      border-color: rgba(255,214,10,0.3);
+      background: rgba(255,214,10,0.04);
+    }
+
+    .challenge-title {
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+    }
+    .challenge-desc {
+      font-size: 0.82rem;
+      color: rgba(224,240,255,0.6);
+      line-height: 1.5;
+    }
+
+    .check-icon {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: all 0.3s;
+    }
+    .check-icon.done {
+      background: rgba(0,255,136,0.15);
+      border-color: var(--green);
+      color: var(--green);
+    }
+    .check-icon.waiting {
+      background: rgba(255,214,10,0.15);
+      border-color: var(--yellow);
+      color: var(--yellow);
+    }
+
+    /* ── Estado badges ── */
+    .status-badge {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      padding: 2px 8px;
+      border-radius: 2px;
+      text-transform: uppercase;
+    }
+    .badge-pendiente { background: rgba(0,245,255,0.1); color: var(--cyan); border: 1px solid rgba(0,245,255,0.3); }
+    .badge-revision  { background: rgba(255,214,10,0.1); color: var(--yellow); border: 1px solid rgba(255,214,10,0.3); }
+    .badge-completado { background: rgba(0,255,136,0.1); color: var(--green); border: 1px solid rgba(0,255,136,0.3); }
+
+    /* ── Monedas badge ── */
+    .coins-badge {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.65rem;
+      color: var(--yellow);
+      background: rgba(255,214,10,0.1);
+      border: 1px solid rgba(255,214,10,0.25);
+      padding: 2px 8px;
+      border-radius: 2px;
+    }
+
+    /* ── Botones ── */
+    .btn-revision {
+      background: transparent;
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      padding: 5px 14px;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+    .btn-revision:hover {
+      background: var(--cyan);
+      color: var(--bg-deep);
+    }
+    .btn-revision:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ── Material de apoyo ── */
+    .material-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0,245,255,0.05);
+      border: 1px solid rgba(0,245,255,0.2);
+      color: var(--cyan);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      padding: 8px 16px;
+      border-radius: 2px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .material-link:hover {
+      background: rgba(0,245,255,0.1);
+      border-color: var(--cyan);
+    }
+
+    /* ── Foro / Chat ── */
+    .chat-container {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      height: 380px;
+      overflow-y: auto;
+      padding: 1rem;
+      scroll-behavior: smooth;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .chat-container::-webkit-scrollbar { width: 4px; }
+    .chat-container::-webkit-scrollbar-track { background: transparent; }
+    .chat-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .msg-bubble {
+      max-width: 80%;
+      animation: msg-in 0.3s ease both;
+    }
+    @keyframes msg-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .msg-bubble.mine { align-self: flex-end; }
+    .msg-bubble.other { align-self: flex-start; }
+
+    .msg-header {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+      color: var(--text-muted);
+    }
+    .msg-header .name { font-weight: bold; }
+    .msg-header .name.admin { color: var(--orange); }
+    .msg-header .name.student { color: var(--cyan); }
+
+    .msg-body {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .msg-bubble.mine .msg-body {
+      background: rgba(0,245,255,0.07);
+      border-color: rgba(0,245,255,0.2);
+    }
+    .msg-bubble.admin-msg .msg-body {
+      background: rgba(255,107,43,0.07);
+      border-color: rgba(255,107,43,0.25);
+    }
+
+    .msg-time {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.55rem;
+      color: rgba(74,127,165,0.5);
+      margin-top: 3px;
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .chat-input {
+      flex: 1;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      color: #e0f0ff;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 0.85rem;
+      padding: 0.6rem 0.9rem;
+      border-radius: 2px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .chat-input:focus { border-color: var(--cyan); }
+    .chat-send-btn {
+      background: var(--cyan);
+      color: var(--bg-deep);
+      border: none;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0 1.2rem;
+      cursor: pointer;
+      border-radius: 2px;
+      letter-spacing: 0.1em;
+      transition: all 0.2s;
+    }
+    .chat-send-btn:hover { background: #00c8d4; }
+
+    /* ── Logout ── */
+    .logout-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.2s;
+      letter-spacing: 0.1em;
+    }
+    .logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── Toast notification ── */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--bg-card);
+      border: 1px solid var(--green);
+      color: var(--green);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 3px;
+      z-index: 999;
+      animation: toast-in 0.4s ease both;
+      display: none;
+    }
+    .toast.show { display: block; }
+    .toast.error { border-color: var(--red); color: var(--red); }
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Scrollbar general ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="top-header">
+    <div style="max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+      <div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--text-muted);letter-spacing:0.2em;margin-bottom:2px;">// PANEL DE EQUIPO</div>
+        <div class="team-name" id="team-name">CARGANDO...</div>
+        <div style="font-family:'Exo 2',sans-serif;font-size:0.8rem;color:var(--text-muted);margin-top:2px;">
+          Bienvenido/a, <span id="user-name" style="color:#e0f0ff;"></span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+        <!-- Contador de monedas -->
+        <div class="coin-counter">
+          <div style="font-size:1.3rem;">🪙</div>
+          <div>
+            <div class="coin-amount" id="coins-display">0</div>
+            <div class="coin-label">Monedas<br>Virtuales</div>
+          </div>
+        </div>
+        <button class="logout-btn" onclick="logout()">SALIR ⏻</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('desafios', this)">
+      ⚡ Desafíos <span class="tab-badge" id="badge-pendientes" style="display:none">0</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('material', this)">
+      📚 Material de Apoyo
+    </button>
+    <button class="tab-btn" onclick="switchTab('foro', this)">
+      💬 Foro del Taller
+    </button>
+  </div>
+
+  <!-- Panel: Desafíos -->
+  <div class="panel active" id="panel-desafios">
+    <div class="cyber-card">
+      <div class="card-title">// DESAFÍOS DEL DÍA</div>
+      <div id="desafios-list">
+        <div class="empty-state">CARGANDO DESAFÍOS...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: Material de Apoyo -->
+  <div class="panel" id="panel-material">
+    <div class="cyber-card">
+      <div class="card-title">// MATERIAL DE APOYO Y RECURSOS</div>
+      <div id="material-list">
+        <div class="empty-state">CARGANDO MATERIAL...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: Foro -->
+  <div class="panel" id="panel-foro">
+    <div class="cyber-card" style="--border-color:var(--orange);">
+      <div class="card-title">// FORO DEL TALLER — CHAT EN TIEMPO REAL</div>
+      <div class="chat-container" id="chat-messages"></div>
+      <div class="chat-input-row">
+        <input type="text" class="chat-input" id="chat-input"
+          placeholder="Escribe tu duda o comentario..."
+          maxlength="300"
+          onkeydown="if(event.key==='Enter')sendMessage()" />
+        <button class="chat-send-btn" onclick="sendMessage()">ENVIAR ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════
+    // VARIABLES GLOBALES
+    // ═══════════════════════════════════════════════════════
+    let equipoData = null;    // Datos del equipo del alumno
+    let userData = null;      // Datos del usuario en sesión
+    let forumPollInterval = null;
+
+    // ═══════════════════════════════════════════════════════
+    // INICIALIZACIÓN
+    // ═══════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadUserData();
+      await loadEquipoData();
+      await loadForum();
+
+      // Polling del foro cada 8 segundos
+      forumPollInterval = setInterval(loadForum, 8000);
+    });
+
+    // ─── Cargar datos del usuario desde /api/me ───────────
+    async function loadUserData() {
+      try {
+        const res = await fetch('/api/me');
+        if (res.redirected || !res.ok) {
+          window.location.href = '/';
+          return;
+        }
+        userData = await res.json();
+        document.getElementById('user-name').textContent = userData.nombre;
+      } catch (e) {
+        window.location.href = '/';
+      }
+    }
+
+    // ─── Cargar datos del equipo desde /api/equipo/mio ────
+    async function loadEquipoData() {
+      try {
+        const res = await fetch('/api/equipo/mio');
+        if (!res.ok) {
+          document.getElementById('team-name').textContent = 'SIN EQUIPO';
+          return;
+        }
+        equipoData = await res.json();
+
+        // Actualizar header
+        document.getElementById('team-name').textContent = equipoData.nombre_equipo;
+        updateCoinsDisplay(equipoData.monedas_decorativas);
+
+        // Renderizar desafíos
+        renderDesafios(equipoData.desafios);
+
+        // Renderizar material
+        renderMaterial(equipoData.desafios);
+      } catch (e) {
+        console.error('Error cargando equipo:', e);
+      }
+    }
+
+    // ─── Actualizar contador de monedas con animación ─────
+    function updateCoinsDisplay(amount) {
+      const el = document.getElementById('coins-display');
+      const prev = parseInt(el.textContent) || 0;
+      if (amount !== prev) {
+        el.classList.add('bump');
+        setTimeout(() => el.classList.remove('bump'), 500);
+      }
+      // Animación numérica
+      const start = prev;
+      const end = amount;
+      const duration = 800;
+      const startTime = Date.now();
+      function tick() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(start + (end - start) * ease);
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // ─── Renderizar lista de desafíos ─────────────────────
+    function renderDesafios(desafios) {
+      const container = document.getElementById('desafios-list');
+      const pendientes = desafios.filter(d => d.estado === 'pendiente').length;
+      const badge = document.getElementById('badge-pendientes');
+
+      if (pendientes > 0) {
+        badge.textContent = pendientes;
+        badge.style.display = 'inline-flex';
+      } else {
+        badge.style.display = 'none';
+      }
+
+      if (!desafios.length) {
+        container.innerHTML = '<div class="empty-state">// NO HAY DESAFÍOS ASIGNADOS AÚN</div>';
+        return;
+      }
+
+      // Ordenar: pendientes → revision → completados
+      const order = { pendiente: 0, revision: 1, completado: 2 };
+      const sorted = [...desafios].sort((a, b) => order[a.estado] - order[b.estado]);
+
+      container.innerHTML = sorted.map(d => {
+        const isPendiente = d.estado === 'pendiente';
+        const isRevision = d.estado === 'revision';
+        const isCompletado = d.estado === 'completado';
+
+        let checkContent = '';
+        let checkClass = '';
+        if (isCompletado) { checkContent = '✓'; checkClass = 'done'; }
+        else if (isRevision) { checkContent = '⟳'; checkClass = 'waiting'; }
+        else { checkContent = ''; checkClass = ''; }
+
+        let badgeHtml = '';
+        if (isPendiente) badgeHtml = '<span class="status-badge badge-pendiente">Pendiente</span>';
+        else if (isRevision) badgeHtml = '<span class="status-badge badge-revision">En Revisión ⟳</span>';
+        else badgeHtml = '<span class="status-badge badge-completado">✓ Completado</span>';
+
+        let actionHtml = '';
+        if (isPendiente) {
+          actionHtml = `<button class="btn-revision" onclick="solicitarRevision('${d.id}', this)">
+            Solicitar Revisión ▸
+          </button>`;
+        } else if (isRevision) {
+          actionHtml = `<button class="btn-revision" disabled style="border-color:var(--yellow);color:var(--yellow);">
+            Esperando Aprobación...
+          </button>`;
+        }
+
+        return `
+          <div class="challenge-item ${d.estado}" id="challenge-${d.id}">
+            <div style="display:flex;align-items:flex-start;gap:0.75rem;">
+              <div class="check-icon ${checkClass}">${checkContent}</div>
+              <div style="flex:1;">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.4rem;">
+                  <div class="challenge-title" style="margin:0;">${d.titulo}</div>
+                  <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
+                    ${badgeHtml}
+                    <span class="coins-badge">🪙 ${d.monedas_recompensa}</span>
+                  </div>
+                </div>
+                <p class="challenge-desc">${d.descripcion}</p>
+                ${actionHtml ? `<div style="margin-top:0.75rem;">${actionHtml}</div>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ─── Renderizar material de apoyo ─────────────────────
+    function renderMaterial(desafios) {
+      const container = document.getElementById('material-list');
+      const withMaterial = desafios.filter(d => d.link_material && d.link_material !== '');
+
+      if (!withMaterial.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div style="font-size:2rem;margin-bottom:0.5rem;">📭</div>
+            // EL PROFESOR AÚN NO HA SUBIDO MATERIAL
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = withMaterial.map(d => `
+        <div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:3px;padding:1rem 1.25rem;margin-bottom:0.75rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.6rem;">
+            <div style="font-weight:600;font-size:0.95rem;">${d.titulo}</div>
+            <span class="status-badge ${d.estado === 'completado' ? 'badge-completado' : 'badge-pendiente'}">${d.estado}</span>
+          </div>
+          <p style="font-size:0.82rem;color:rgba(224,240,255,0.6);margin-bottom:0.75rem;line-height:1.5;">${d.descripcion}</p>
+          <a href="${d.link_material}" target="_blank" rel="noopener" class="material-link">
+            🔗 Ver Material de Apoyo
+          </a>
+        </div>
+      `).join('');
+    }
+
+    // ─── Solicitar revisión de un desafío ─────────────────
+    async function solicitarRevision(idDesafio, btn) {
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+
+      try {
+        const res = await fetch('/api/desafio/solicitar-revision', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id_desafio: idDesafio })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showToast('✓ Revisión solicitada al profesor');
+          // Recargar datos del equipo para reflejar el cambio
+          await loadEquipoData();
+        } else {
+          showToast(data.error || 'Error al solicitar', true);
+          btn.disabled = false;
+          btn.textContent = 'Solicitar Revisión ▸';
+        }
+      } catch (e) {
+        showToast('Error de conexión', true);
+        btn.disabled = false;
+        btn.textContent = 'Solicitar Revisión ▸';
+      }
+    }
+
+    // ─── Cargar mensajes del foro ─────────────────────────
+    async function loadForum() {
+      try {
+        const res = await fetch('/api/foro');
+        const mensajes = await res.json();
+        renderForum(mensajes);
+      } catch (e) {
+        console.error('Error cargando foro:', e);
+      }
+    }
+
+    // ─── Renderizar mensajes del foro ─────────────────────
+    function renderForum(mensajes) {
+      const container = document.getElementById('chat-messages');
+      const wasAtBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 60;
+
+      if (!mensajes.length) {
+        container.innerHTML = '<div class="empty-state">// EL FORO ESTÁ VACÍO</div>';
+        return;
+      }
+
+      container.innerHTML = mensajes.map(m => {
+        const isMine = userData && m.usuario === userData.nombre;
+        const isAdmin = m.rol === 'admin';
+        const time = new Date(m.timestamp).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+        const date = new Date(m.timestamp).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
+
+        return `
+          <div class="msg-bubble ${isMine ? 'mine' : 'other'} ${isAdmin ? 'admin-msg' : ''}">
+            <div class="msg-header">
+              <span class="name ${isAdmin ? 'admin' : 'student'}">${m.usuario}</span>
+              ${!isAdmin ? ` · <span style="opacity:0.6">${m.equipo}</span>` : ''}
+              ${isAdmin ? ' · <span style="color:var(--orange);font-size:0.55rem;">PROFESOR</span>' : ''}
+            </div>
+            <div class="msg-body">${escapeHtml(m.mensaje)}</div>
+            <div class="msg-time">${date} ${time}</div>
+          </div>
+        `;
+      }).join('');
+
+      // Auto-scroll al fondo si ya estaba al fondo
+      if (wasAtBottom) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+
+    // ─── Enviar mensaje al foro ───────────────────────────
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      input.value = '';
+
+      try {
+        const res = await fetch('/api/foro/mensaje', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mensaje: msg })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          await loadForum();
+          const chat = document.getElementById('chat-messages');
+          chat.scrollTop = chat.scrollHeight;
+        } else {
+          showToast(data.error || 'Error enviando mensaje', true);
+        }
+      } catch (e) {
+        showToast('Error de conexión', true);
+      }
+    }
+
+    // ─── Cambio de tabs ───────────────────────────────────
+    function switchTab(tabName, btn) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(`panel-${tabName}`).classList.add('active');
+      btn.classList.add('active');
+
+      if (tabName === 'foro') {
+        setTimeout(() => {
+          const chat = document.getElementById('chat-messages');
+          chat.scrollTop = chat.scrollHeight;
+        }, 50);
+      }
+    }
+
+    // ─── Logout ───────────────────────────────────────────
+    async function logout() {
+      clearInterval(forumPollInterval);
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/';
+    }
+
+    // ─── Utilidades ───────────────────────────────────────
+    function showToast(msg, isError = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show' + (isError ? ' error' : '');
+      setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

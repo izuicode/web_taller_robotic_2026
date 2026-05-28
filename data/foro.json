@@ -1,0 +1,26 @@
+[
+  {
+    "id": "m001",
+    "usuario": "Profesor García",
+    "equipo": "General",
+    "rol": "admin",
+    "mensaje": "¡Bienvenidos al taller de robótica! Recuerden que cualquier duda la pueden escribir aquí.",
+    "timestamp": "2025-03-01T10:00:00.000Z"
+  },
+  {
+    "id": "m002",
+    "usuario": "Luca Pérez",
+    "equipo": "TEAM ALPHA",
+    "rol": "alumno",
+    "mensaje": "Profe, ¿el sensor ultrasónico va conectado al pin 9 o al 10?",
+    "timestamp": "2025-03-01T10:15:00.000Z"
+  },
+  {
+    "id": "m003",
+    "usuario": "Profesor García",
+    "equipo": "General",
+    "rol": "admin",
+    "mensaje": "Luca, va al pin digital 9 (Trigger) y pin 10 (Echo). ¡Revisen el material de apoyo!",
+    "timestamp": "2025-03-01T10:18:00.000Z"
+  }
+]

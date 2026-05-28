@@ -1,0 +1,50 @@
+[
+  {
+    "id": "u001",
+    "nombre": "Profesor García",
+    "usuario": "admin",
+    "password": "admin123",
+    "rol": "admin",
+    "id_equipo": null
+  },
+  {
+    "id": "u002",
+    "nombre": "Luca Pérez",
+    "usuario": "luca",
+    "password": "1234",
+    "rol": "alumno",
+    "id_equipo": "eq001"
+  },
+  {
+    "id": "u003",
+    "nombre": "Valentina Ríos",
+    "usuario": "vale",
+    "password": "1234",
+    "rol": "alumno",
+    "id_equipo": "eq001"
+  },
+  {
+    "id": "u004",
+    "nombre": "Mateo Suárez",
+    "usuario": "mateo",
+    "password": "1234",
+    "rol": "alumno",
+    "id_equipo": "eq002"
+  },
+  {
+    "id": "u005",
+    "nombre": "Sofía Castro",
+    "usuario": "sofia",
+    "password": "1234",
+    "rol": "alumno",
+    "id_equipo": "eq002"
+  },
+  {
+    "id": "u006",
+    "nombre": "Emilio Torres",
+    "usuario": "emilio",
+    "password": "1234",
+    "rol": "alumno",
+    "id_equipo": "eq003"
+  }
+]

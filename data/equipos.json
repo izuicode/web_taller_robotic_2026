@@ -1,0 +1,79 @@
+[
+  {
+    "id_equipo": "eq001",
+    "nombre_equipo": "TEAM ALPHA",
+    "monedas_decorativas": 150,
+    "desafios": [
+      {
+        "id": "d001",
+        "titulo": "Montaje del Chasis",
+        "descripcion": "Ensamblar correctamente el chasis del robot siguiendo el manual de instrucciones. Verificar que todos los tornillos estén ajustados.",
+        "estado": "completado",
+        "monedas_recompensa": 50,
+        "link_material": "https://example.com/manual-chasis"
+      },
+      {
+        "id": "d002",
+        "titulo": "Programación del Sensor Ultrasónico",
+        "descripcion": "Escribir el código para que el robot detecte obstáculos a menos de 20cm y se detenga automáticamente.",
+        "estado": "pendiente",
+        "monedas_recompensa": 75,
+        "link_material": "https://example.com/sensor-ultrasonico"
+      },
+      {
+        "id": "d003",
+        "titulo": "Calibración de Motores",
+        "descripcion": "Ajustar la velocidad de ambos motores para que el robot avance en línea recta sin desviarse.",
+        "estado": "revision",
+        "monedas_recompensa": 60,
+        "link_material": ""
+      }
+    ]
+  },
+  {
+    "id_equipo": "eq002",
+    "nombre_equipo": "TEAM OMEGA",
+    "monedas_decorativas": 90,
+    "desafios": [
+      {
+        "id": "d004",
+        "titulo": "Conexión de Circuito Base",
+        "descripcion": "Conectar los componentes básicos: Arduino, protoboard, LEDs y resistencias según el esquema.",
+        "estado": "completado",
+        "monedas_recompensa": 40,
+        "link_material": "https://example.com/circuito-base"
+      },
+      {
+        "id": "d005",
+        "titulo": "Control por Bluetooth",
+        "descripcion": "Implementar el módulo HC-05 y programar los comandos básicos de movimiento vía app móvil.",
+        "estado": "pendiente",
+        "monedas_recompensa": 90,
+        "link_material": "https://example.com/bluetooth-hc05"
+      }
+    ]
+  },
+  {
+    "id_equipo": "eq003",
+    "nombre_equipo": "TEAM SIGMA",
+    "monedas_decorativas": 30,
+    "desafios": [
+      {
+        "id": "d006",
+        "titulo": "Instalación del Entorno",
+        "descripcion": "Instalar Arduino IDE, drivers necesarios y verificar la comunicación con la placa.",
+        "estado": "completado",
+        "monedas_recompensa": 30,
+        "link_material": "https://example.com/arduino-ide"
+      },
+      {
+        "id": "d007",
+        "titulo": "Primer Programa: Blink",
+        "descripcion": "Cargar el programa Blink en el Arduino y modificarlo para que el LED parpadee cada 500ms.",
+        "estado": "pendiente",
+        "monedas_recompensa": 35,
+        "link_material": ""
+      }
+    ]
+  }
+]
