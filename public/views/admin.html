@@ -430,6 +430,7 @@
     <button class="tab-btn" onclick="switchTab('alumnos', this)">👥 Gestión de Alumnos</button>
     <button class="tab-btn" onclick="switchTab('metricas', this)">📊 Métricas</button>
     <button class="tab-btn" onclick="switchTab('foro', this)">💬 Foro</button>
+    <button class="tab-btn" onclick="switchTab('equipos', this)">🛡 Equipos</button>
   </div>
 
   <!-- ═══ PANEL: DESAFÍOS ═══ -->
@@ -585,7 +586,32 @@
       </div>
     </div>
   </div>
+<!-- ═══ PANEL: EQUIPOS ═══ -->
+<div class="panel" id="panel-equipos">
+  <div class="cyber-card accent-orange">
 
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:1rem;flex-wrap:wrap;">
+      <div class="card-title" style="margin:0;">// GESTIÓN DE EQUIPOS</div>
+
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <input
+          type="text"
+          id="nuevo-equipo-nombre"
+          class="cyber-input"
+          placeholder="Nuevo equipo"
+          style="width:220px;"
+        />
+
+        <button class="btn btn-primary" onclick="crearEquipo()">
+          + CREAR
+        </button>
+      </div>
+    </div>
+
+    <div id="equipos-admin-list"></div>
+
+  </div>
+</div>
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
@@ -605,6 +631,7 @@
     document.addEventListener('DOMContentLoaded', async () => {
       await loadAdminUser();
       await loadEquipos();
+      renderEquiposAdmin();
       await loadAlumnos();
       await loadForum();
       await loadMetricas();
@@ -641,6 +668,7 @@
           document.getElementById('team-select').value = selectedTeamId;
         }
       } catch (e) { console.error('Error cargando equipos:', e); }
+    renderEquiposAdmin();
     }
 
     // ─── Cargar desafíos de un equipo ────────────────────
@@ -1036,7 +1064,179 @@
         }
       } catch (e) { showToast('Error enviando', true); }
     }
+// ─────────────────────────────────────────────────────
+// GESTIÓN DE EQUIPOS
+// ─────────────────────────────────────────────────────
 
+function renderEquiposAdmin() {
+  const container = document.getElementById('equipos-admin-list');
+
+  if (!equipos.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        No hay equipos registrados
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = equipos.map(e => `
+    <div class="challenge-admin-item">
+
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:0.9rem;">
+          ${e.nombre_equipo}
+        </div>
+
+        <div style="margin-top:4px;font-size:0.7rem;color:var(--text-muted);font-family:'Share Tech Mono',monospace;">
+          🪙 ${e.monedas_decorativas} monedas ·
+          ${e.desafios.length} desafíos
+        </div>
+      </div>
+
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button
+          class="btn btn-muted btn-sm"
+          onclick="editarEquipo('${e.id_equipo}', '${e.nombre_equipo}')"
+        >
+          ✏ EDITAR
+        </button>
+
+        <button
+          class="btn btn-danger btn-sm"
+          onclick="eliminarEquipo('${e.id_equipo}', '${e.nombre_equipo}')"
+        >
+          ✕ ELIMINAR
+        </button>
+      </div>
+
+    </div>
+  `).join('');
+}
+
+async function crearEquipo() {
+  const input = document.getElementById('nuevo-equipo-nombre');
+
+  const nombre_equipo = input.value.trim();
+
+  if (!nombre_equipo) {
+    showToast('Ingresa un nombre', true);
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/equipo/crear', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ nombre_equipo })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      showToast('Equipo creado');
+
+      input.value = '';
+
+      await loadEquipos();
+      renderEquiposAdmin();
+      await loadMetricas();
+    } else {
+      showToast(data.error || 'Error', true);
+    }
+
+  } catch {
+    showToast('Error de conexión', true);
+  }
+}
+
+async function editarEquipo(id_equipo, nombreActual) {
+  const nuevoNombre = prompt(
+    'Nuevo nombre del equipo:',
+    nombreActual
+  );
+
+  if (!nuevoNombre || !nuevoNombre.trim()) return;
+
+  try {
+    const res = await fetch('/api/equipo/editar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        id_equipo,
+        nombre_equipo: nuevoNombre.trim()
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      showToast('Equipo actualizado');
+
+      await loadEquipos();
+      renderEquiposAdmin();
+      renderAlumnos();
+      await loadMetricas();
+
+      if (selectedTeamId) {
+        await loadTeamChallenges(selectedTeamId);
+      }
+
+    } else {
+      showToast(data.error || 'Error', true);
+    }
+
+  } catch {
+    showToast('Error de conexión', true);
+  }
+}
+
+async function eliminarEquipo(id_equipo, nombre) {
+  const ok = confirm(
+    `¿Eliminar el equipo "${nombre}"?`
+  );
+
+  if (!ok) return;
+
+  try {
+    const res = await fetch('/api/equipo/eliminar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id_equipo })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      showToast('Equipo eliminado');
+
+      selectedTeamId = '';
+
+      await loadEquipos();
+      renderEquiposAdmin();
+      renderAlumnos();
+      await loadMetricas();
+
+      document.getElementById('admin-challenges-list').innerHTML = `
+        <div class="empty-state">
+          Selecciona un equipo
+        </div>
+      `;
+
+    } else {
+      showToast(data.error || 'Error', true);
+    }
+
+  } catch {
+    showToast('Error de conexión', true);
+  }
+}
     // ─── Tabs ─────────────────────────────────────────────
     function switchTab(tabName, btn) {
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));

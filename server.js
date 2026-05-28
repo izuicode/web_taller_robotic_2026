@@ -167,7 +167,92 @@ app.get('/api/equipo/:id', requireAuth, (req, res) => {
   if (!equipo) return res.status(404).json({ error: 'Equipo no encontrado' });
   res.json(equipo);
 });
+// POST /api/equipo/crear → Crear nuevo equipo
+app.post('/api/equipo/crear', requireAdmin, (req, res) => {
+  const { nombre_equipo } = req.body;
 
+  if (!nombre_equipo || nombre_equipo.trim() === '') {
+    return res.status(400).json({ error: 'Nombre del equipo requerido' });
+  }
+
+  const equipos = readJSON(EQUIPOS_PATH);
+
+  const existe = equipos.find(
+    e => e.nombre_equipo.toLowerCase() === nombre_equipo.trim().toLowerCase()
+  );
+
+  if (existe) {
+    return res.status(400).json({ error: 'Ese equipo ya existe' });
+  }
+
+  const nuevoEquipo = {
+    id_equipo: generateId('eq'),
+    nombre_equipo: nombre_equipo.trim(),
+    monedas_decorativas: 0,
+    desafios: []
+  };
+
+  equipos.push(nuevoEquipo);
+
+  writeJSON(EQUIPOS_PATH, equipos);
+
+  res.json({
+    success: true,
+    equipo: nuevoEquipo
+  });
+});
+
+// POST /api/equipo/editar → Editar nombre del equipo
+app.post('/api/equipo/editar', requireAdmin, (req, res) => {
+  const { id_equipo, nombre_equipo } = req.body;
+
+  if (!id_equipo || !nombre_equipo) {
+    return res.status(400).json({ error: 'Datos incompletos' });
+  }
+
+  const equipos = readJSON(EQUIPOS_PATH);
+
+  const equipo = equipos.find(e => e.id_equipo === id_equipo);
+
+  if (!equipo) {
+    return res.status(404).json({ error: 'Equipo no encontrado' });
+  }
+
+  equipo.nombre_equipo = nombre_equipo.trim();
+
+  writeJSON(EQUIPOS_PATH, equipos);
+
+  res.json({ success: true });
+});
+
+// POST /api/equipo/eliminar → Eliminar equipo
+app.post('/api/equipo/eliminar', requireAdmin, (req, res) => {
+  const { id_equipo } = req.body;
+
+  let equipos = readJSON(EQUIPOS_PATH);
+  let usuarios = readJSON(USUARIOS_PATH);
+
+  const existe = equipos.find(e => e.id_equipo === id_equipo);
+
+  if (!existe) {
+    return res.status(404).json({ error: 'Equipo no encontrado' });
+  }
+
+  equipos = equipos.filter(e => e.id_equipo !== id_equipo);
+
+  // quitar alumnos del equipo eliminado
+  usuarios = usuarios.map(u => {
+    if (u.id_equipo === id_equipo) {
+      u.id_equipo = null;
+    }
+    return u;
+  });
+
+  writeJSON(EQUIPOS_PATH, equipos);
+  writeJSON(USUARIOS_PATH, usuarios);
+
+  res.json({ success: true });
+});
 // ─── API: DESAFÍOS ────────────────────────────────────────────
 
 // POST /api/desafio/crear → Admin crea un nuevo desafío para un equipo
