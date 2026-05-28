@@ -1,7 +1,7 @@
 [
   {
     "id": "u001",
-    "nombre": "Profesor García",
+    "nombre": "Profesor Rodríguez",
     "usuario": "admin",
     "password": "admin123",
     "rol": "admin",
